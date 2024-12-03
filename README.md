@@ -24,3 +24,15 @@ For setting up Synology as an OP in Authentik, refer to the [Authentik Documenta
     - **Flow Settings**: Leave as is
 ### Add Synology SSO Server as new OpenID Provider to Authentik Login Page
 See [Federated and Social Sources](https://docs.goauthentik.io/docs/users-sources/sources/).
+### Setup Authentik as Authentication Provider for Nginx Proxy Hosts
+Here's some more info: https://geekscircuit.com/set-up-authentik-sso-with-nginx-proxy-manager/#create-new-provider
+
+For now, _domain level forward authentication_ in Authentik doesn't seem to work as expected[^1][^2].
+
+## Additional Sources
+- https://www.reddit.com/r/navidrome/comments/r8834t/reverse_proxy_authentication_with_authentik/
+- https://www.reddit.com/r/navidrome/comments/oa8gkz/guide_how_to_use_a_sso_solution_in_front_of/
+- https://github.com/vouch/vouch-proxy
+
+[^1]: https://www.reddit.com/r/Authentik/comments/1460g3z/domain_level_forward_auth_problem/
+[^2]: https://github.com/goauthentik/authentik/discussions/2780
