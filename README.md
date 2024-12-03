@@ -2,8 +2,8 @@
 A setup for a private server with dynamic IP / reverse proxy, and SSO with Authentik or OpenID (OIDC)
 ## Nginx
 ## Authentik
-### Synology DSM as OpenID Provider (OP) in Authentik
-For setting up SSO in Synology DSM, see [_Synology's KB - SSO Server_](https://kb.synology.com/en-us/DSM/help/SSOServer/sso_server_desc) or, as an example, [_How do I use Synology SSO Server to set up OIDC SSO for DSM?_](https://kb.synology.com/en-us/DSM/tutorial/set_up_oidc_for_dsm_in_sso_server).
+### Synology SSO Server as OpenID Provider (OP) in Authentik
+For setting up the SSO Server in Synology DSM, see [_Synology's KB - SSO Server_](https://kb.synology.com/en-us/DSM/help/SSOServer/sso_server_desc) or, as an example, [_How do I use Synology SSO Server to set up OIDC SSO for DSM?_](https://kb.synology.com/en-us/DSM/tutorial/set_up_oidc_for_dsm_in_sso_server).
 
 For setting up Synology as an OP in Authentik, refer to the [Authentik Documentation](https://docs.goauthentik.io/docs/users-sources/sources/protocols/oauth/#openid-connect-authentik-20226) or:
 1. Login and switch to the administration interface.
@@ -22,5 +22,5 @@ For setting up Synology as an OP in Authentik, refer to the [Authentik Documenta
       - **Scopes**: Leave empty unless required
     - **URL Settings**: Filled automatically once saved
     - **Flow Settings**: Leave as is
-### Add new OP to Authentik Login Page
+### Add Synology SSO Server as new OpenID Provider to Authentik Login Page
 See [Federated and Social Sources](https://docs.goauthentik.io/docs/users-sources/sources/).
