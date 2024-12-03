@@ -1,5 +1,5 @@
 # Nginx-Authentik-OIDC-SSO
-A setup for a danymic IP private server with reverse proxy and SSO with Authentik or OpenID (OIDC)
+A setup for a private server with dynamic IP / reverse proxy, and SSO with Authentik or OpenID (OIDC)
 ## Nginx
 ## Authentik
 ### Synology DSM as OpenID Provider (OP) in Authentik
