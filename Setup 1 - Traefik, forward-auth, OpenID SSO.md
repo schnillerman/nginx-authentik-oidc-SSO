@@ -22,63 +22,62 @@ For **Let's Encrypt** to function properly, your DNS provider must allow Traefik
 The `docker-compose.yml` will define the Traefik container along with the other services, including your **Synology SSO server** and an error page.
 
 ```yaml
-version: "3.7"
-
 services:
   # Traefik service (reverse proxy with Let's Encrypt)
   traefik:
-    image: traefik:v2.10
-    container_name: traefik
-    command:
-      - "--api.insecure=true"  # Enable the Traefik dashboard (optional, only for testing)
-      - "--providers.docker=true"  # Enable Docker provider
-      - "--entryPoints.web.address=:80"  # HTTP entry point for Let's Encrypt HTTP challenge
-      - "--entryPoints.websecure.address=:443"  # HTTPS entry point
-      - "--certificatesResolvers.le.acme.httpChallenge.entryPoint=web"  # HTTP-01 challenge for Let's Encrypt
-      - "--certificatesResolvers.le.acme.email=your-email@domain.tld"  # Email for Let's Encrypt registration
-      - "--certificatesResolvers.le.acme.storage=/letsencrypt/acme.json"  # Persistent storage for certificates
-      - "--log.level=INFO"  # Log level (adjust for production)
-      - "--accesslog=true"  # Enable access logs
+    image: traefik:stable
+    container_name: web-tools-traefik
+    command: # this shouldn't be used if static conf file is used (see volumes section); see also https://doc.traefik.io/traefik/getting-started/configuration-overview/#the-static-configuration
+      #- "--api.insecure=true"  # Enable the Traefik dashboard (optional, only for testing)
+      #- "--providers.docker=true"  # Enable Docker provider
+      #- "--entryPoints.web.address=:80"  # HTTP entry point for Let's Encrypt HTTP challenge
+      #- "--entryPoints.websecure.address=:443"  # HTTPS entry point
+      #- "--certificateResolvers.letsencrypt.acme.httpChallenge.entryPoint=web"  # HTTP-01 challenge for Let's Encrypt
+      #- "--certificateResolvers.letsencrypt.acme.email=your-email@domain.tld"  # Email for Let's Encrypt registration
+      #- "--certificateResolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"  # Persistent storage for certificates
+      #- "--log.level=INFO"  # Log level (adjust for production)
+      #- "--accesslog=true"  # Enable access logs
     ports:
       - "11420:80"  # Expose HTTP port
-      - "11421:443"  # Expose HTTPS port
+      - "11422:443"  # Expose HTTPS port
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"  # To allow Traefik to talk to Docker API
-      - "./letsencrypt:/letsencrypt"  # Store Let's Encrypt certificates
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # To allow Traefik to talk to Docker API
+      - ./letsencrypt:/letsencrypt  # Store Let's Encrypt certificates  # (mkdir -p ./letsencrypt && touch $_/acme.json && chmod 600 $_)
+      - ./traefik.yml:/ect/traefik/traefik.yml # For static configuration; see also https://doc.traefik.io/traefik/getting-started/configuration-overview/#configuration-file
     networks:
-      - web
+      - host
 
   # Synology SSO Server (example)
-  sso-server:
-    image: your-sso-image  # Replace with your actual Synology SSO image
-    container_name: sso-server
-    environment:
-      - "SSO_SERVER=true"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.sso.rule=Host(`sso.domain.tld`)"
-      - "traefik.http.routers.sso.entrypoints=websecure"
-      - "traefik.http.services.sso.loadbalancer.server.port=11420"  # Internal port of your SSO server
-    networks:
-      - web
+  # sso-server:
+  #   image: your-sso-image  # Replace with your actual Synology SSO image
+  #   container_name: sso-server
+  #   environment:
+  #     - "SSO_SERVER=true"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.sso.rule=Host(`sso.domain.tld`)"
+  #     - "traefik.http.routers.sso.entrypoints=websecure"
+  #     - "traefik.http.services.sso.loadbalancer.server.port=11420"  # Internal port of your SSO server
+  #   networks:
+  #     - web
 
   # Error page container
-  error-page:
-    image: nginx:alpine  # You can use any image that serves an error page
-    container_name: error-page
-    volumes:
-      - "./error-page:/usr/share/nginx/html"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.error.rule=Host(`domain.tld`)"  # Redirect base domain to error page
-      - "traefik.http.routers.error.entrypoints=websecure"
-      - "traefik.http.services.error.loadbalancer.server.port=80"
-    networks:
-      - web
+  # error-page:
+  #   image: nginx:alpine  # You can use any image that serves an error page
+  #   container_name: error-page
+  #   volumes:
+  #     - "./error-page:/usr/share/nginx/html"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.error.rule=Host(`domain.tld`)"  # Redirect base domain to error page
+  #     - "traefik.http.routers.error.entrypoints=websecure"
+  #     - "traefik.http.services.error.loadbalancer.server.port=80"
+  #   networks:
+  #     - web
 
-networks:
-  web:
-    external: true  # Assuming you have an external network for your services
+# networks:
+#   web:
+#     external: true  # Assuming you have an external network for your services
 ```
 
 #### Key Points:
@@ -98,16 +97,40 @@ This file is optional, but it allows for more advanced configuration and setting
 api:
   insecure: true  # Exposes the dashboard on port 8080 (optional, for testing purposes)
 
-log:
-  level: INFO
+# log:
+#   level: INFO
 
 accessLog: {}
 
-certificatesResolvers:
-  le:
+providers:
+  docker: true
+  exposedbydefault: false
+
+http:  # always redirect to https
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+    HSTS:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        # Add the following to docker-compose to use:
+        # labels:
+        #  - "traefik.http.middlewares.HSTS.headers.framedeny=true"
+        #  - "traefik.http.middlewares.HSTS.headers.browserxssfilter=true"
+
+entryPoints:  # Used by certificatesResolvers and for specific definition (otherwise implicit by standard). Must be defined for custom ports anyway, and enchances clarity even if not required.
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+certificateResolvers:
+  letsencrypt:
     acme:
-      email: "your-email@domain.tld"  # Email address for Let's Encrypt
-      storage: /letsencrypt/acme.json
+      email: your-email@example.com  # Replace with your e-mail address
+      storage: /letsencrypt/acme.json  # (mkdir -p ./letsencrypt && touch $_/acme.json && chmod 600 $_)
       httpChallenge:
         entryPoint: web  # Challenge through HTTP (port 80)
 ```
