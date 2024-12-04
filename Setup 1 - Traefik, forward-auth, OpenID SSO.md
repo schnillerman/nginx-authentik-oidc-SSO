@@ -111,7 +111,6 @@ http:
     SSO:
       rule: "Host(`sso.domain.tld`)"
       entrypoints: websecure
-
   services:
     SSO:
       loadbalancer:
