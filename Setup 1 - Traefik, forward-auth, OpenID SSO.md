@@ -7,7 +7,7 @@ To set up a **Traefik** reverse proxy in a Dockerized environment with **Let's E
 
 ### Assumptions:
 - The domain is dynamic, so you will need a **dynamic DNS (DDNS)** setup to keep the domain pointing to your server.
-- The router is already forwarding ports `80` and `443` to the correct internal ports `11420` and `11421`.
+- The router is already forwarding ports `80` and `443` to the internal docker server's ports `11420` and `11422`.
 - Your Synology SSO server is accessible via `subdomain.domain.tld` (for example `sso.domain.tld`).
 - Traefik will be running in a Docker container and will route traffic to the SSO server and other subdomains.
 
