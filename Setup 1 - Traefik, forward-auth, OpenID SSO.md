@@ -41,7 +41,7 @@ services:
       - "11420:80"  # Expose HTTP port
       - "11422:443"  # Expose HTTPS port
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro  # To allow Traefik to talk to Docker API
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # To allow Traefik to talk to Docker API; see https://doc.traefik.io/traefik/providers/docker/#provider-configuration
       - ./letsencrypt:/letsencrypt  # Store Let's Encrypt certificates  # (mkdir -p ./letsencrypt && touch $_/acme.json && chmod 600 $_)
       - ./config/traefik:/etc/traefik # For static configuration; see also https://doc.traefik.io/traefik/getting-started/configuration-overview/#configuration-file
     networks:
@@ -94,8 +94,9 @@ services:
 This file is optional and for [static configuration](https://doc.traefik.io/traefik/getting-started/configuration-overview/#the-static-configuration), but it allows for more advanced configuration and settings outside of the `docker-compose.yml`. Since Traefik configuration is already primarily handled by labels in the compose file, this is for additional custom configurations.
 
 ```yaml
-api:
+api:  # see https://doc.traefik.io/traefik/operations/api/
   insecure: true  # Exposes the dashboard on port 8080 (optional, for testing purposes)
+  dashboard: true
 
 # log:
 #   level: INFO
@@ -103,7 +104,7 @@ api:
 accessLog: {}
 
 providers:
-  docker:  # see [here](https://doc.traefik.io/traefik/providers/docker/#provider-configuration)
+  docker:  # see https://doc.traefik.io/traefik/providers/docker/#provider-configuration
     endpoint: "unix:///var/run/docker.sock"
     exposedbydefault: false
   file:
