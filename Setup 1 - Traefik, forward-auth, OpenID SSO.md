@@ -103,7 +103,7 @@ api:
 accessLog: {}
 
 providers:
-  docker:
+  docker:  # see [here](https://doc.traefik.io/traefik/providers/docker/#provider-configuration)
     endpoint: "unix:///var/run/docker.sock"
     exposedbydefault: false
   file:
