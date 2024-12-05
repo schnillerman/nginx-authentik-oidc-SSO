@@ -29,9 +29,9 @@ The `docker-compose.yml` will define the Traefik container along with the other 
 services:
   # Traefik service (reverse proxy with Let's Encrypt)
   traefik:
-    image: traefik:stable
+    image: traefik:v3
     container_name: web-tools-traefik
-    command: # this shouldn't be used if static conf file is used (see volumes section); see also https://doc.traefik.io/traefik/getting-started/configuration-overview/#the-static-configuration
+    # command: # this shouldn't be used if static conf file is used (see volumes section); see also https://doc.traefik.io/traefik/getting-started/configuration-overview/#the-static-configuration
       #- "--api.insecure=true"  # Enable the Traefik dashboard (optional, only for testing)
       #- "--providers.docker=true"  # Enable Docker provider
       #- "--entryPoints.web.address=:80"  # HTTP entry point for Let's Encrypt HTTP challenge
@@ -42,14 +42,16 @@ services:
       #- "--log.level=INFO"  # Log level (adjust for production)
       #- "--accesslog=true"  # Enable access logs
     ports:
-      - "11420:80"  # Expose HTTP port
-      - "11422:443"  # Expose HTTPS port
+      - "11427:80"  # Expose HTTP port
+      - "11428:8080"  # Expose API port
+      - "11429:443"  # Expose HTTPS port
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro  # To allow Traefik to talk to Docker API; see https://doc.traefik.io/traefik/providers/docker/#provider-configuration
       - ./letsencrypt:/letsencrypt  # Store Let's Encrypt certificates  # (mkdir -p ./letsencrypt && touch $_/acme.json && chmod 600 $_)
-      - ./config/traefik:/etc/traefik # For static configuration; see also https://doc.traefik.io/traefik/getting-started/configuration-overview/#configuration-file
-    networks:
-      - host
+      - ./config/traefik:/etc/traefik  # For static configuration; see also https://doc.traefik.io/traefik/getting-started/configuration-overview/#configuration-file
+      - ./letsencrypt:/etc/letsencrypt
+    # networks:
+    #    - host  # Not necessary due to port mapping
 
   # Synology SSO Server (example)
   # sso-server:
@@ -98,35 +100,37 @@ services:
 This file is optional and for [static configuration](https://doc.traefik.io/traefik/getting-started/configuration-overview/#the-static-configuration), but it allows for more advanced configuration and settings outside of the `docker-compose.yml`. Since Traefik configuration is already primarily handled by labels in the compose file, this is for additional custom configurations.
 
 ```yaml
-api:  # see https://doc.traefik.io/traefik/operations/api/
-  insecure: true  # Exposes the dashboard on port 8080 (optional, for testing purposes)
+log:
+  level: DEBUG
+  
+accesslog: false
+
+api:
+  insecure: true
   dashboard: true
-
-# log:
-#   level: INFO
-
-accessLog: {}
 
 providers:
   docker:  # see https://doc.traefik.io/traefik/providers/docker/#provider-configuration
-    endpoint: "unix:///var/run/docker.sock"
+    endpoint: "unix:///var/run/docker.sock" # Mapped as volume in docker-compose
     exposedbydefault: false
   file:
     filename: /etc/traefik/config.yml
 
-entryPoints:  # Used by certificatesResolvers and for specific definition (otherwise implicit by standard). Must be defined for custom ports anyway, and enchances clarity even if not required.
+entryPoints:
   web:
     address: ":80"
+  # api:
+  #   address: ":8080"
   websecure:
     address: ":443"
 
-certificateResolvers:
+certificatesResolvers:
   letsencrypt:
     acme:
-      email: your-email@example.com  # Replace with your e-mail address
-      storage: /letsencrypt/acme.json  # (mkdir -p ./letsencrypt && touch $_/acme.json && chmod 600 $_)
+      email: till.reymann@gmail.com
+      storage: /etc/letsencrypt/acme.json
       httpChallenge:
-        entryPoint: web  # Challenge through HTTP (port 80)
+        entryPoint: web
 ```
 
 This configuration file is used for storing **ACME (Let's Encrypt)** configuration and additional logging. The storage path for `acme.json` should be persistent, hence it’s mapped as a volume.
