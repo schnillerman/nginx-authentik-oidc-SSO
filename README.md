@@ -10,7 +10,7 @@ An extensive conversation with ChatGPT results in the following setup:
   - Synology SSO Server as OpenID Provider
  
 #### ChatGPT-Based Recommendations
-- [Setup 1: Traefik with traefik-forward-auth and OpenID-based SSO](https://github.com/schnillerman/reverse-proxy-SSO-docker/blob/main/Setup%201%20-%20Traefik,%20forward-auth,%20OpenID%20SSO.md).
+- [Setup 1: Traefik with traefik-forward-auth and OpenID-based SSO](https://github.com/schnillerman/reverse-proxy-SSO-docker/blob/main/Scenarios/Setup%201%20-%20Traefik,%20forward-auth,%20OpenID%20SSO.md).
 
 ### Nginx Reverse "Plug-Ins" mentioned by the web & ChatGPT
 |**Criterion**            |**Vouch Proxy**                              |**oauth2-proxy**                                                                               |
